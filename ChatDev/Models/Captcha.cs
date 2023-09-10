@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ChatDev.Models
 {
-    public class RegistrationModel
+    public class Captcha
     {
         [Required]
         public string CaptchaToken { get; set; }

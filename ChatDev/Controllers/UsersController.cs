@@ -20,7 +20,7 @@ namespace ChatDev.Controllers
         private readonly IUsersRepository _usersRepository;
         private readonly IMapper _mapper;
 
-        public UsersController(IUsersRepository usersRepository, IConfiguration configuration, IMapper mapper)
+        public UsersController(IUsersRepository usersRepository, IMapper mapper)
         {
             this._mapper = mapper;
             this._usersRepository = usersRepository;
@@ -37,12 +37,6 @@ namespace ChatDev.Controllers
         //    }
         //    return BadRequest();
         //}
-
-        // GET: Users/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
 
         // POST: Users/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -61,11 +55,7 @@ namespace ChatDev.Controllers
                 return BadRequest("user already exist");
             }
 
-            //var captchaResponse = await CaptchaValidation.IsCaptchaTokenValidAsync(model.CaptchaToken, _configuration);
-            //if (!captchaResponse)
-            //{
-            //    return BadRequest("Captcha Not Valid");
-            //}
+           
             var user= _mapper.Map<User>(userDto);
 
             await _usersRepository.AddAsync(user);
