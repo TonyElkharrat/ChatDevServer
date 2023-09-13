@@ -21,17 +21,7 @@ namespace ChatDev.Services
                 client.UseDefaultCredentials = false;
                 client.EnableSsl = true;
                 client.Credentials = new NetworkCredential("chatdevc@gmail.com", "macj ieof mpzh vmwh\r\n");
-                using (var message = new MailMessage(
-                    from: new MailAddress("chatdevc@gmail.com", "ChatDev"),
-                    to: new MailAddress(recipientEmail, recipientName)
-                    ))
-                {
-
-                    message.Subject = "Hello from code!";
-                    message.Body = GetWelcomeEmailHtml(recipientName);
-
-                    client.Send(message);
-                }
+               //PRIVATE
             }
         }
 
