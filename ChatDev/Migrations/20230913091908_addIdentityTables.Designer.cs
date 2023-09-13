@@ -4,6 +4,7 @@ using ChatDev.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatDev.Migrations
 {
     [DbContext(typeof(ChatDevDbContext))]
-    partial class ChatDevDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230913091908_addIdentityTables")]
+    partial class addIdentityTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -120,22 +122,6 @@ namespace ChatDev.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "6410b787-3a5b-4294-81df-40796b6cb03b",
-                            ConcurrencyStamp = "5b225636-5200-4773-8fbf-b3a45bcecbdb",
-                            Name = "Administrator",
-                            NormalizedName = "ADMINISTRATOR"
-                        },
-                        new
-                        {
-                            Id = "26068a5e-725f-4889-b49c-340b585444f0",
-                            ConcurrencyStamp = "ff2f876a-894c-4f32-8a60-9889be35b70d",
-                            Name = "User",
-                            NormalizedName = "USER"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

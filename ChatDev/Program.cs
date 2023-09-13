@@ -2,6 +2,8 @@ using ChatDev.Configuration;
 using ChatDev.Contracts;
 using ChatDev.Data;
 using ChatDev.Repository;
+using Google.Api;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
 
@@ -18,14 +20,20 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(MapConfig));
 //Repository 
 
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>)); 
-builder.Services.AddScoped<IUsersRepository,UsersRepository>(); 
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+builder.Services.AddIdentityCore<ApiUser>().AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ChatDevDbContext>();
 
 //DbContext
 builder.Services.AddDbContext<ChatDevDbContext>(options => {
     options.UseSqlServer(connectionString);
 });
 
+//Anti Forgery Token 
+builder.Services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN");
+builder.Services.AddAntiforgery();
+builder.Services.AddMvc();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -38,7 +46,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.UseAuthentication();
 app.MapControllers();
 
 app.Run();
