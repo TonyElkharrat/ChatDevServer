@@ -1,5 +1,4 @@
-﻿using ChatDev.Annotations;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ChatDev.Models
 {

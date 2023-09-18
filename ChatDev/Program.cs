@@ -3,9 +3,16 @@ using ChatDev.Contracts;
 using ChatDev.Data;
 using ChatDev.Repository;
 using Google.Api;
+using HotelListing.API.Core.Middleware;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Build.Execution;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Configuration;
+using System.Diagnostics;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,19 +29,43 @@ builder.Services.AddAutoMapper(typeof(MapConfig));
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+//Identity,RefreshToken
 builder.Services.AddIdentityCore<ApiUser>().AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ChatDevDbContext>();
+    .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("ChatDevApi")
+    .AddEntityFrameworkStores<ChatDevDbContext>()
+    .AddDefaultTokenProviders();
+
+//Authentication
+builder.Services.AddScoped<IAuthManager,AuthManager>();
 
 //DbContext
 builder.Services.AddDbContext<ChatDevDbContext>(options => {
     options.UseSqlServer(connectionString);
 });
+//JWT 
+var issuer = builder.Configuration["JwtSettings:Issuer"];
+var audience = builder.Configuration["JwtSettings:Audience"];
+var key = builder.Configuration["JwtSettings:Key"];
 
-//Anti Forgery Token 
-builder.Services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN");
-builder.Services.AddAntiforgery();
-builder.Services.AddMvc();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
+//Serilog 
+builder.Host.UseSerilog((ctx, lc) => lc.WriteTo.Console().ReadFrom.Configuration(ctx.Configuration));
 var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -42,11 +73,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
 app.MapControllers();
 
 app.Run();

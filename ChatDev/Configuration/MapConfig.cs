@@ -10,7 +10,7 @@ namespace ChatDev.Configuration
     {
         public MapConfig()
         {
-           CreateMap<ApiUser, ApiUserDto>().ReverseMap();
+           CreateMap<ApiUserDto, ApiUser>().ReverseMap();
         }
     }
 }
