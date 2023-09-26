@@ -4,6 +4,7 @@ using ChatDev.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatDev.Migrations
 {
     [DbContext(typeof(ChatDevDbContext))]
-    partial class ChatDevDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230921045619_creation-of-chatsubject-and-Message-Tables")]
+    partial class creationofchatsubjectandMessageTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -99,29 +101,19 @@ namespace ChatDev.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("ChatDev.Data.ChatSubject", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ChatSubjects");
-                });
-
             modelBuilder.Entity("ChatDev.Data.Message", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ChatSubjectId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ChatSubjectId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SentBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SentDate")
                         .IsRequired()
@@ -131,14 +123,7 @@ namespace ChatDev.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ChatSubjectId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Messages");
                 });
@@ -172,15 +157,15 @@ namespace ChatDev.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "c1825ab9-3753-41c1-b5cf-219b121640f2",
-                            ConcurrencyStamp = "f66e3615-e278-4c2b-a056-0d73d2d727a6",
+                            Id = "7961e6ce-d994-4a4d-bcdf-4c3beb898cf1",
+                            ConcurrencyStamp = "32ccb9fe-a4ef-44db-a139-49a03a4020cc",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
-                            Id = "a8966167-5ea0-4d0a-984e-952fcf7e058e",
-                            ConcurrencyStamp = "879a85bd-c567-4a3f-aa44-0152935d06bd",
+                            Id = "dd36b253-88c3-40b3-be0f-92f4a9581011",
+                            ConcurrencyStamp = "c82d3fac-243f-4989-ba71-2af31d50f9be",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -290,23 +275,6 @@ namespace ChatDev.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("ChatDev.Data.Message", b =>
-                {
-                    b.HasOne("ChatDev.Data.ChatSubject", "ChatSubject")
-                        .WithMany()
-                        .HasForeignKey("ChatSubjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ChatDev.Data.ApiUser", "SentBy")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("ChatSubject");
-
-                    b.Navigation("SentBy");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

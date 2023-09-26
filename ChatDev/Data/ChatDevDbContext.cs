@@ -16,5 +16,9 @@ namespace ChatDev.Data
             base.OnModelCreating(builder);
             builder.ApplyConfiguration(new RoleConfiguration());
         }
+
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<ChatSubject> ChatSubjects { get; set; }
+
     }
 }

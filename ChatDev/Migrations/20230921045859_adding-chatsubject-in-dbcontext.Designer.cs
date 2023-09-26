@@ -4,6 +4,7 @@ using ChatDev.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatDev.Migrations
 {
     [DbContext(typeof(ChatDevDbContext))]
-    partial class ChatDevDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230921045859_adding-chatsubject-in-dbcontext")]
+    partial class addingchatsubjectindbcontext
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -120,8 +122,13 @@ namespace ChatDev.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ChatSubjectId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ChatSubjectId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SentBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SentDate")
                         .IsRequired()
@@ -131,14 +138,7 @@ namespace ChatDev.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ChatSubjectId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Messages");
                 });
@@ -172,15 +172,15 @@ namespace ChatDev.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "c1825ab9-3753-41c1-b5cf-219b121640f2",
-                            ConcurrencyStamp = "f66e3615-e278-4c2b-a056-0d73d2d727a6",
+                            Id = "824c83e8-53d0-45cd-88f7-76f1b5076415",
+                            ConcurrencyStamp = "2463fe93-e57b-44a8-8671-9a41b69cac4e",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
-                            Id = "a8966167-5ea0-4d0a-984e-952fcf7e058e",
-                            ConcurrencyStamp = "879a85bd-c567-4a3f-aa44-0152935d06bd",
+                            Id = "962da1f1-f770-424e-b6ff-6324a941316e",
+                            ConcurrencyStamp = "6b3fe7d2-5ea0-4517-9285-91c5511e008e",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -290,23 +290,6 @@ namespace ChatDev.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("ChatDev.Data.Message", b =>
-                {
-                    b.HasOne("ChatDev.Data.ChatSubject", "ChatSubject")
-                        .WithMany()
-                        .HasForeignKey("ChatSubjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ChatDev.Data.ApiUser", "SentBy")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("ChatSubject");
-
-                    b.Navigation("SentBy");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

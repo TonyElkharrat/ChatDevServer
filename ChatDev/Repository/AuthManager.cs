@@ -2,11 +2,13 @@
 using ChatDev.Contracts;
 using ChatDev.Data;
 using ChatDev.Models.Users;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using static Google.Cloud.RecaptchaEnterprise.V1.AccountVerificationInfo.Types;
 using static Google.Cloud.RecaptchaEnterprise.V1.TransactionData.Types;
 
 namespace ChatDev.Repository
@@ -27,6 +29,34 @@ namespace ChatDev.Repository
             _configuration = configuration;
         }
 
+        public async Task<AuthResponseDto> AuthenticateWithGoogle(GoogleAuthDto googleAuthDto)
+        {
+            var user = _mapper.Map<ApiUser>(googleAuthDto);
+            user.UserName = googleAuthDto.Email;
+
+            _user = await _userManager.FindByEmailAsync(user.Email);
+
+            if (_user == null)
+            {
+                var result = await _userManager.CreateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    return null;
+                }
+                _user = user;
+            }
+            var token = await GenerateToken();
+
+            return new AuthResponseDto
+            {
+                Token = token,
+                UserId = _user.Id,
+                FirstName = _user.FirstName,
+                LastName = _user.LastName,
+            };
+        }
+
         public async Task<string> CreateRefreshToken()
         {
             await _userManager.RemoveAuthenticationTokenAsync(_user, _loginProvider, _refreshToken);
@@ -35,7 +65,7 @@ namespace ChatDev.Repository
             return newRefreshToken;
         }
 
-        public async Task<AuthResponseDto> Login(LoginDto loginDto)
+        public async Task<AuthResponseDto> Login(ApiUserDto loginDto)
         {
             _user = await _userManager.FindByEmailAsync(loginDto.Email);
             bool isValidUser = await _userManager.CheckPasswordAsync(_user, loginDto.Password);
@@ -47,7 +77,7 @@ namespace ChatDev.Repository
 
             return new AuthResponseDto()
             {
-                Token =  await GenerateToken(),
+                Token = await GenerateToken(),
                 UserId = _user.Id,
                 RefreshToken = await CreateRefreshToken(),
             };
@@ -74,16 +104,16 @@ namespace ChatDev.Repository
             JwtRegisteredClaimNames.Email)?.Value;
             _user = await _userManager.FindByEmailAsync(userName);
 
-            if(_user == null)
+            if (_user == null)
             {
                 return null;
             }
 
-            var isRefreshTokenValid = await _userManager.VerifyUserTokenAsync(_user,_loginProvider,_refreshToken, request.RefreshToken);
+            var isRefreshTokenValid = await _userManager.VerifyUserTokenAsync(_user, _loginProvider, _refreshToken, request.RefreshToken);
 
-            if(isRefreshTokenValid)
+            if (isRefreshTokenValid)
             {
-                var token = await  GenerateToken();
+                var token = await GenerateToken();
                 return new AuthResponseDto()
                 {
                     Token = token,
@@ -111,7 +141,7 @@ namespace ChatDev.Repository
                     new Claim(JwtRegisteredClaimNames.Jti, new Guid().ToString()),
                     new Claim(JwtRegisteredClaimNames.Email,_user.Email),
                 }.Union(userClaims).Union(roleClaims);
-        
+
             var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
                 _configuration["Jwt:Audience"],
                 claims,

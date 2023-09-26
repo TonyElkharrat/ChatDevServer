@@ -6,7 +6,8 @@ namespace ChatDev.Contracts
     public interface IAuthManager
     {
         Task<IEnumerable<IdentityError>> Register(ApiUserDto userDto);
-        Task<AuthResponseDto> Login(LoginDto loginDto);
+        Task<AuthResponseDto> Login(ApiUserDto loginDto);
+        Task<AuthResponseDto> AuthenticateWithGoogle(GoogleAuthDto googleAuthDto);
         Task<string> CreateRefreshToken();
         Task<AuthResponseDto> VerifyRefreshToken(AuthResponseDto authResponseDto);
     }

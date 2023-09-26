@@ -2,6 +2,7 @@ using ChatDev.Configuration;
 using ChatDev.Contracts;
 using ChatDev.Data;
 using ChatDev.Repository;
+using ChatDev.Services;
 using Google.Api;
 using HotelListing.API.Core.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -25,9 +26,15 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 // Auto Mapper Config
 builder.Services.AddAutoMapper(typeof(MapConfig));
+
+//DbContext
+builder.Services.AddDbContext<ChatDevDbContext>(options => {
+    options.UseSqlServer(connectionString);
+});
 //Repository 
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IChatRepository, ChatManagerRepository>();
 
 //Identity,RefreshToken
 builder.Services.AddIdentityCore<ApiUser>().AddRoles<IdentityRole>()
@@ -38,16 +45,13 @@ builder.Services.AddIdentityCore<ApiUser>().AddRoles<IdentityRole>()
 //Authentication
 builder.Services.AddScoped<IAuthManager,AuthManager>();
 
-//DbContext
-builder.Services.AddDbContext<ChatDevDbContext>(options => {
-    options.UseSqlServer(connectionString);
-});
 //JWT 
 var issuer = builder.Configuration["JwtSettings:Issuer"];
 var audience = builder.Configuration["JwtSettings:Audience"];
 var key = builder.Configuration["JwtSettings:Key"];
 
-
+//SignalR
+builder.Services.AddSignalR();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -63,9 +67,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 //Serilog 
 builder.Host.UseSerilog((ctx, lc) => lc.WriteTo.Console().ReadFrom.Configuration(ctx.Configuration));
+
+builder.Services.AddSingleton(builder.Configuration);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:4200")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
+app.UseCors("AllowSpecificOrigins");
 
-
+app.UseRouting();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapHub<ChatHub>("/chatHub");
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
